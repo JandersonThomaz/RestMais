@@ -42,17 +42,19 @@ namespace Api.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] Restaurante restaurante)
+        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] RestauranteViewModel restauranteViewModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != restaurante.RestauranteId)
+            if (id != restauranteViewModel.RestauranteId)
             {
                 return BadRequest();
             }
+
+            var restaurante = new Restaurante(restauranteViewModel.Nome, restauranteViewModel.RestauranteId); 
 
             db.Entry(restaurante).State = EntityState.Modified;
 
@@ -100,6 +102,7 @@ namespace Api.Controllers
             }
 
             var restaurante = await db.Restaurantes.FindAsync(id);
+
             if (restaurante == null)
             {
                 return NotFound();
