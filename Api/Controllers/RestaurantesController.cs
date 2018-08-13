@@ -23,9 +23,12 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Restaurante> Get()
+        public IEnumerable<Restaurante> Get(string busca = "")
         {
-            return db.Restaurantes.AsNoTracking().ToList();
+            return db.Restaurantes
+                .Where(x=>x.Nome.Contains(busca))
+                .AsNoTracking()
+                .ToList();
         }
 
         [HttpGet("{id}")]
