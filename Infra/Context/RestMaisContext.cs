@@ -1,4 +1,5 @@
 ﻿using Dominio.Models;
+using Infra.Mappings;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -15,5 +16,13 @@ namespace Infra.Context
 
         public DbSet<Restaurante> Restaurantes { get; set; }
         public DbSet<Prato> Pratos { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new RestauranteMap());
+            modelBuilder.ApplyConfiguration(new PratoMap());
+
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

@@ -7,38 +7,42 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Dominio.Models;
 using Infra.Context;
+using Api.ViewModels;
 
 namespace Api.Controllers
 {
     [Produces("application/json")]
     [Route("api/[controller]")]
-    //[ApiController]
+    [ApiController]
     public class PratosController : ControllerBase
     {
-        private readonly RestMaisContext _context;
+        private readonly RestMaisContext db;
 
         public PratosController(RestMaisContext context)
         {
-            _context = context;
+            db = context;
         }
 
-        // GET: api/Pratos
         [HttpGet]
-        public IEnumerable<Prato> GetPratos()
+        public IEnumerable<Prato> Get(string nome = "")
         {
-            return _context.Pratos;
+            return db.Pratos
+                .Include(x => x.Restaurante)
+                .Where(x => x.Nome.Contains(nome))
+                .OrderByDescending(x => x.PratoId)
+                .AsNoTracking()
+                .ToList();
         }
 
-        // GET: api/Pratos/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetPrato([FromRoute] int id)
+        public async Task<IActionResult> Get([FromRoute] int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var prato = await _context.Pratos.FindAsync(id);
+            var prato = await db.Pratos.FindAsync(id);
 
             if (prato == null)
             {
@@ -48,25 +52,26 @@ namespace Api.Controllers
             return Ok(prato);
         }
 
-        // PUT: api/Pratos/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPrato([FromRoute] int id, [FromBody] Prato prato)
+        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] PratoViewModel pratoViewModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != prato.PratoId)
+            if (id != pratoViewModel.PratoId)
             {
                 return BadRequest();
             }
 
-            _context.Entry(prato).State = EntityState.Modified;
+            var prato = new Prato(pratoViewModel.Nome, pratoViewModel.RestauranteId, pratoViewModel.Preco, pratoViewModel.PratoId);
+
+            db.Entry(prato).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
+                await db.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -83,45 +88,45 @@ namespace Api.Controllers
             return NoContent();
         }
 
-        // POST: api/Pratos
         [HttpPost]
-        public async Task<IActionResult> PostPrato([FromBody] Prato prato)
+        public async Task<IActionResult> Post([FromBody] PratoViewModel pratoViewModel)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.Pratos.Add(prato);
-            await _context.SaveChangesAsync();
+            var prato = new Prato(pratoViewModel.Nome, pratoViewModel.RestauranteId, pratoViewModel.Preco, pratoViewModel.PratoId);
 
-            return CreatedAtAction("GetPrato", new { id = prato.PratoId }, prato);
+            db.Pratos.Add(prato);
+            await db.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(Get), new { id = prato.PratoId }, prato);
         }
 
-        // DELETE: api/Pratos/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePrato([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var prato = await _context.Pratos.FindAsync(id);
+            var prato = await db.Pratos.FindAsync(id);
             if (prato == null)
             {
                 return NotFound();
             }
 
-            _context.Pratos.Remove(prato);
-            await _context.SaveChangesAsync();
+            db.Pratos.Remove(prato);
+            await db.SaveChangesAsync();
 
             return Ok(prato);
         }
 
         private bool PratoExists(int id)
         {
-            return _context.Pratos.Any(e => e.PratoId == id);
+            return db.Pratos.Any(e => e.PratoId == id);
         }
     }
 }

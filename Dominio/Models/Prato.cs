@@ -8,24 +8,27 @@ namespace Dominio.Models
     {
         private Prato() { }
 
-        public Prato(int pratoId, int restauranteId, decimal valor)
+        public Prato(string nome, int restauranteId, decimal valor, int pratoId = 0)
         {
             this.PratoId = pratoId;
             this.RestauranteId = restauranteId;
-            this.Valor = valor;
+            this.Nome = nome;
+            this.Preco = valor;
         }
 
-        public Prato(int pratoId, decimal valor, Restaurante restaurante)
+        public Prato(string nome, int pratoId, decimal valor, Restaurante restaurante)
         {
+            this.Nome = nome;
             this.PratoId = pratoId;
-            this.Valor = valor;
+            this.Preco = valor;
             this.Restaurante = restaurante;
 
         }
 
         public int PratoId { get; private set; }
         public int RestauranteId { get; private set; }
-        public decimal Valor { get; private set; }
+        public string Nome { get; private set; }
+        public decimal Preco { get; private set; }
         public Restaurante Restaurante { get; private set; }
     }
 }

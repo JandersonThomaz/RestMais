@@ -28,6 +28,7 @@ namespace Api.Controllers
         {
             return db.Restaurantes
                 .Where(x=>x.Nome.Contains(nome))
+                .OrderByDescending(x=>x.RestauranteId)
                 .AsNoTracking()
                 .ToList();
         }
